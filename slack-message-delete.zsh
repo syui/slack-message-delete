@@ -4,16 +4,25 @@ d=${0:a:h}
 f=$d/history.json
 e=~/.config/slack/api.txt
 
+# option
+while getopts c:t: OPT
+do
+  case $OPT in
+    c) flg_channel=true ; var_channel=$OPTARG ;;
+    t) token=$OPTARG ;;
+  esac
+done
+
 # token
 # https://api.slack.com/custom-integrations/legacy-tokens
+
 if [ -f $e ];then
 	token=`cat $e`
-else
-	if [ -z "$1" ];then
-		exit
-	fi
+fi
+if [ $# -eq 1 ];then
 	token=$1
 fi
+
 slack=https://slack.com/api
 
 # channels.list
@@ -21,12 +30,7 @@ slack=https://slack.com/api
 url="$slack/channels.list?token=$token"
 json_channel=`curl -sL $url| jq .`
 
-while getopts c: OPT
-do
-  case $OPT in
-    c) flg_channel=true ; var_channel=$OPTARG ;;
-  esac
-done
+
 if [ "$flg_channel" = "true" ]; then
 	name=`echo $json_channel|jq -r ".channels[]|select(.name == \"$var_channel\")"`
 	channel=`echo $name|jq -r '.id'`
@@ -37,6 +41,7 @@ else
 		exit
 	fi
 fi
+
 #oldest=`echo $json_channel|jq -r '.channels[0]|.created'`
 #latest=`date "+%s"`
 
