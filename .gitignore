@@ -1,0 +1,5 @@
+.env
+history.json
+list.json
+slack-delete.zsh
+bin
