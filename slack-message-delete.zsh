@@ -20,16 +20,25 @@ slack=https://slack.com/api
 # https://api.slack.com/methods/channels.list
 url="$slack/channels.list?token=$token"
 json_channel=`curl -sL $url| jq .`
-oldest=`echo $json_channel|jq -r '.channels[0]|.created'`
-channel=`echo $json_channel|jq -r '.channels[0].id'`
-name=`echo $json_channel|jq -r '.channels[0].name'`
 
-if [ "$name" != "general" ];then
-	exit
+while getopts c: OPT
+do
+  case $OPT in
+    c) flg_channel=true ; var_channel=$OPTARG ;;
+  esac
+done
+if [ "$flg_channel" = "true" ]; then
+	name=`echo $json_channel|jq -r ".channels[]|select(.name == \"$var_channel\")"`
+	channel=`echo $name|jq -r '.id'`
+else
+	name=`echo $json_channel|jq -r '.channels[0].name'`
+	channel=`echo $json_channel|jq -r '.channels[0].id'`
+	if [ "$name" != "general" ];then
+		exit
+	fi
 fi
-
-latest=`date "+%s"`
-
+#oldest=`echo $json_channel|jq -r '.channels[0]|.created'`
+#latest=`date "+%s"`
 
 for (( ii=1;ii<=1000;ii++ ))
 do
